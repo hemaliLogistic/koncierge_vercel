@@ -58,7 +58,7 @@ const Home = () => {
               <button className='social-div bg-redEB'>
                 <div className='social-image bg-redEB'>
                   <div className='social-image-overlay'></div>
-                  <img src='images/google.png' className='w-6 h-6' />
+                  <img src='images/Google.png' className='w-6 h-6' />
                 </div>
                 <div className='social-text-div bg-redEB'>
                   <text className='social-text'>Continue with Google</text>
