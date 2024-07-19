@@ -80,8 +80,8 @@ body {
 .register-text {
   @apply text-[16px] sm:text-[18px] text-gray33  font-Mulish font-extralight mt-[10px] opacity-[80%];
 }
-.bottom-div {
-  @apply mt-5  sm:mt-0 bottom-1 lg:bottom-5 sm:fixed;
+.bottom-div-register {
+  @apply mt-5  sm:mt-0 bottom-1 lg:bottom-1 sm:fixed;
 }
 .register-btn {
   @apply text-black font-Mulish font-normal text-[16px] sm:text-[18px]  pl-3;

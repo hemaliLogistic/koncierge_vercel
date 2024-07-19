@@ -6,11 +6,11 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
+/* @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
-}
+} */
 
 .logo-div {
   @apply absolute top-8 left-12 text-[20px] logotext text-[#95ACB9] font-semibold sm:top-20 sm:left-28 sm:text-[40px];

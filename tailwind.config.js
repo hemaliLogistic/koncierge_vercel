@@ -1,3 +1,4 @@
+const { nextui } = require("@nextui-org/theme");
 /** @type {import('tailwindcss').Config} */
 
 const colors = require("tailwindcss/colors");
@@ -8,6 +9,7 @@ module.exports = {
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./node_modules/@nextui-org/theme/dist/components/[object Object].js",
   ],
   theme: {
     extend: {
@@ -28,6 +30,8 @@ module.exports = {
         green00: "#006B20",
         blue19: "#1976D2",
         redEB: "#EB4335",
+        black33: "#333333",
+        grayAC: "#ACACAC",
       },
     },
     fontFamily: {
@@ -35,5 +39,5 @@ module.exports = {
       Mulish: ["Mulish"],
     },
   },
-  plugins: [],
+  plugins: [nextui()],
 };

@@ -9,37 +9,47 @@ const ProtectedPageService = () => {
   const path = usePathname();
   const user = getData("user");
   const userAuth = user?.token;
-  const selector = useSelector(state => state.registerApi);
+  const selector = useSelector((state) => state.isUser);
 
   const afterLoginProtectedPages = [
-   ];
+    "/dashboard",
+    "/bookings",
+    "/service",
+    "/history",
+    "/prefrences",
+    "settings",
+  ];
   const afterLoginNotAccessiblePages = [
     "/",
-    "/home",
     "/register",
     "/login",
+    "/verifyEmail",
     "/resetPassword",
     "/forgotPassword",
-     ];
+  ];
 
   useEffect(() => {
-    if (afterLoginNotAccessiblePages.includes(path) && userAuth) {
-      let dashboard_url = `/que1`;
-      router.push(dashboard_url);
-    }
-
-    let isProtectedDynamicPath = false;
-    afterLoginProtectedPages.forEach((pattern) => {
-      if (
-        (pattern instanceof RegExp && pattern.test(path)) ||
-        path === pattern
-      ) {
-        isProtectedDynamicPath = true;
+    if (afterLoginNotAccessiblePages.includes(path)) {
+      const isRegistered = localStorage.getItem("isRegistreation");
+      if (userAuth) {
+        let dashboard_url = `/dashboard`;
+        router.push(dashboard_url);
+      } else if (isRegistered) {
+        router.push("/verifyEmail");
       }
-    });
-
-    if (isProtectedDynamicPath && !userAuth) {
-      router.push("/login");
+    } else {
+      let isProtectedDynamicPath = false;
+      afterLoginProtectedPages.map((protectedPage) => {
+        if (
+          (typeof protectedPage === "string" && protectedPage === path) ||
+          (protectedPage instanceof RegExp && protectedPage.test(path))
+        ) {
+          isProtectedDynamicPath = true;
+        }
+      });
+      if (isProtectedDynamicPath && !userAuth) {
+        router.push("/");
+      }
     }
   }, [userAuth, path]);
 

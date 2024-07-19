@@ -2,7 +2,7 @@
 
 import { Inter, Outfit, Roboto, Rubik } from "next/font/google";
 import { Open_Sans } from "next/font/google";
-import React, { useState } from "react";
+import React, { useEffect, useLayoutEffect, useState } from "react";
 import "react-toastify/dist/ReactToastify.css";
 import { useRouter, usePathname } from "next/navigation";
 import "./globals.css";
@@ -21,6 +21,15 @@ import { I18nextProvider } from "react-i18next";
 import common_en from "../locales/en/common_en.json";
 import i18next from "i18next";
 import { Metadata } from "next";
+import { LocationProvider } from "@/utils/Context/LocationContext";
+import { SessionProvider } from "next-auth/react";
+import "@/utils/global";
+import { getData } from "@/utils/storage";
+import Navbar from "@/components/NavBar/NavBar";
+import { NextUIProvider } from "@nextui-org/react";
+import Authlayout from "./(auth)/layout";
+import VisitorLayout from "./(visitor)/layout";
+import DashBoardLayout from "./(dashboard)/layout";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -45,15 +54,28 @@ i18next.init({
 function RootLayout({ children }) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const router = useRouter();
+
   const pathname = usePathname();
+  const user = getData("user");
+  const userAuth = user?.token;
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
+
+  useLayoutEffect(() => {
+    if (!user) {
+      <VisitorLayout />;
+    } else {
+      <DashBoardLayout />;
+    }
+  }, []);
+
   const isLoginPage =
     pathname === "/login" ||
     pathname === "/register" ||
     pathname == "/resetPassword" ||
+    pathname == "/verifyPassword" ||
     pathname == "/forgotPassword";
 
   return (
@@ -63,30 +85,31 @@ function RootLayout({ children }) {
         <meta name='description' content='Koncierge description' />
         <meta name='viewport' content='width=device-width, initial-scale=1' />
         <Provider store={store}>
-          <I18nextProvider i18n={i18next}>
-            <GoogleOAuthProvider clientId='598913711908-ps1ud5pqp6diuci99laprr35pkbqffoa.apps.googleusercontent.com'>
-              <ProtectedPageService />
-              <ToastWrapper />
-              <div>
-                <div>
-                  {!isLoginPage && isSidebarOpen && (
-                    <Stepbardiv $isvisible={isSidebarOpen}>
-                      <Sidebar />
-                    </Stepbardiv>
-                  )}
-                  <MainDiv $isvisible={isSidebarOpen}>
-                    {/* {!isLoginPage && (
-                    <Header
-                      onToggleSidebar={toggleSidebar}
-                      isSidebarOpen={isSidebarOpen}
-                    />
-                  )} */}
-                    <StyledJsxRegistry>{children}</StyledJsxRegistry>
-                  </MainDiv>
-                </div>
-              </div>
-            </GoogleOAuthProvider>
-          </I18nextProvider>
+          <NextUIProvider>
+            <LocationProvider>
+              <I18nextProvider i18n={i18next}>
+                <SessionProvider>
+                  {/* <GoogleOAuthProvider clientId='598913711908-ps1ud5pqp6diuci99laprr35pkbqffoa.apps.googleusercontent.com'> */}
+                  <ProtectedPageService />
+                  <ToastWrapper />
+                  <div>
+                    <div>
+                      {!isLoginPage && isSidebarOpen && (
+                        <Stepbardiv $isvisible={isSidebarOpen}>
+                          <Sidebar />
+                        </Stepbardiv>
+                      )}
+                      <MainDiv $isvisible={isSidebarOpen}>
+                        {/* {userAuth && <Navbar />} */}
+                        <StyledJsxRegistry>{children}</StyledJsxRegistry>
+                      </MainDiv>
+                    </div>
+                  </div>
+                  {/* </GoogleOAuthProvider> */}
+                </SessionProvider>
+              </I18nextProvider>
+            </LocationProvider>
+          </NextUIProvider>
         </Provider>
       </body>
     </html>

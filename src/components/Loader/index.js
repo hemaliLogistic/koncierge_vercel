@@ -1,12 +1,24 @@
-import React from 'react'
+import React from "react";
+import { ThreeCircles } from "react-loader-spinner";
+// import "react-loader-spinner/dist/";
+// import "react-loader-spinner/dist/loader/css/react-spinner-loader.css";
 
-const Loader = () => {
-    return (
-        <div className="flex gap-4 flex-wrap justify-center pt-56">
-            <img className="w-20 h-20 animate-spin" src="https://www.svgrepo.com/show/70469/loading.svg" alt="Loading icon" />
+export default function Loader() {
+  return (
+    <div className='fixed top-0 left-0 right-0 bottom-0 z-10 bg-black bg-opacity-30'>
+      <div className='absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2'>
+        <div className='bg-transparent p-4 rounded-lg'>
+          <ThreeCircles
+            visible={true}
+            height='100'
+            width='50'
+            color='#F6F6F6'
+            ariaLabel='three-circles-loading'
+            wrapperStyle={{}}
+            wrapperClass=''
+          />
         </div>
-    )
-
+      </div>
+    </div>
+  );
 }
-
-export default Loader;

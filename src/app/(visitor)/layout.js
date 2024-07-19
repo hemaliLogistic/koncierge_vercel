@@ -1,7 +1,7 @@
 import React from "react";
 
-const Layout = ({ children }) => {
+const VisitorLayout = ({ children }) => {
   return <> {children}</>;
 };
 
-export default Layout;
+export default VisitorLayout;

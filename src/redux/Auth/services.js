@@ -16,4 +16,9 @@ export const ForgetPasswordUser = (data) => {
 export const resetPassword = (data) => {
   return axiosPost(API_ROUTER.RESET_PASSWORD_USER, data);
 };
-
+export const verifyEmail = (data) => {
+  return axiosPost(API_ROUTER.VERIFY_USER, data);
+};
+export const resendLink = (data) => {
+  return axiosPost(API_ROUTER.RESEND_LINK, data);
+};

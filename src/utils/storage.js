@@ -1,17 +1,22 @@
 "use client";
+
 import { decodeData, encodeData } from "./jwt";
+// import { setUserStatus, setUserStatusInitially } from "@/redux/Auth/AuthSlice";
+// import Cookie from "js-cookie";
 
 export const saveData = (key, value) => {
-    console.log("value",key);
+  console.log("value", key);
 
   if (window) {
     try {
       const encryptedData = encodeData(value);
+      // Cookie.set("token", encryptedData);
 
+      // storeDispatch(setUserStatus(true));
+      // storeDispatch(setUserStatusInitially(true));
       window.localStorage.setItem(key, encryptedData);
     } catch (error) {
-      console.log("error",error);
-
+      console.log("error", error);
     }
   }
 };

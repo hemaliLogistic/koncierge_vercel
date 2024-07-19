@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -20,64 +20,20 @@ import { useRouter } from "next/navigation";
 import { getData } from "@/utils/storage";
 import "./global.css";
 import CustomSlider from "@/components/CustomSlider/customeSlider";
+import { LocationContext } from "@/utils/Context/LocationContext";
+import { useTranslation } from "next-i18next";
+import Loader from "@/components/Loader";
 
 const LoginPage = () => {
   const dispatch = useDispatch();
   const router = useRouter();
-  const user = getData("user");
-  const userAuth = user?.token;
+  const { toaster } = useToaster();
+  const { t } = useTranslation("common");
+
+  const { location, error } = useContext(LocationContext);
+
   const [isHidden, setIsHidden] = useState(false);
-
-  const login = useGoogleLogin({
-    onSuccess: (CodeResponse) => decode(CodeResponse.access_token),
-  });
-
-  const decode = (token) => {
-    let accessTokenForGoogle = token;
-    async function check() {
-      try {
-        let response = await fetch(
-          "https://www.googleapis.com/oauth2/v3/userinfo",
-          {
-            headers: {
-              Authorization: `Bearer ${accessTokenForGoogle}`,
-            },
-          }
-        );
-        if (response.ok) {
-          let data = await response.json();
-          console.log("data", data);
-          try {
-            const res = await dispatch(
-              registerAction({
-                fullname: data.name,
-                email: data.email,
-                google_token: token,
-                is_google_login: 1,
-              })
-            );
-            // if (!res?.data?.status) {
-            //   return toast.error(
-            //     res?.data?.message || "Something went wrong 1 !"
-            //   );
-            // }
-            if (res?.payload?.status) {
-              toaster(TOAST_ALERTS.LOGIN_SUCCESS, TOAST_TYPES.SUCCESS);
-              router.push(`/que1`);
-            }
-          } catch (error) {
-            toast.error("Something went wrong !");
-            console.log("Error", error);
-          }
-        } else {
-          throw new Error("Failed to fetch user info");
-        }
-      } catch (error) {
-        console.error("Error:", error);
-      }
-    }
-    check();
-  };
+  const [isLoading, setIsLoading] = useState(false);
 
   // Form Config
   const defaultValues = useMemo(
@@ -94,13 +50,13 @@ const LoginPage = () => {
       .shape({
         email: yup
           .string()
-          .required("Please enter email address")
-          .email("Please enter valid email address")
-          .trim("Please enter valid email address"),
+          .required(t("enterEmail"))
+          .email(t("validEmail"))
+          .trim(t("validEmail")),
         password: yup
           .string()
-          .required("Password is required")
-          .trim("Enter valid password"),
+          .required(t("passwordRequired"))
+          .trim(t("validpassword")),
       })
       .required()
       .strict(true);
@@ -120,117 +76,135 @@ const LoginPage = () => {
     setValue,
   } = methods;
 
-  const { toaster } = useToaster();
-
   const onSubmitForm = async (formData) => {
     try {
       const { email, password } = formData;
-
-      const res = await dispatch(
-        loginAction({
-          is_google_login: 0,
+      console.log("location", location);
+      let loginParams = {};
+      if (location) {
+        loginParams = {
+          loginType: "email",
           email,
           password,
-        })
-      );
-      //   const res = await axiosPost(API_ROUTER.LOGIN, {
-      //     is_google_login: 0,
-      //     email,
-      //     password,
-      //   });
+          loggedTimeLatitude: location.latitude,
+          loggedTimeLongitude: location.longitude,
+        };
+      } else {
+        loginParams = {
+          loginType: "email",
+          email,
+          password,
+        };
+      }
+      setIsLoading(true);
+      const res = await dispatch(loginAction(loginParams));
 
-      console.log("res", res);
+      console.log("res-=-=-=-", res);
       if (!res.payload.status) {
+        setIsLoading(false);
         return toast.error(TOAST_ALERTS.ERROR_MESSAGE);
       }
       if (res.payload.status) {
+        setIsLoading(false);
+
         toaster(TOAST_ALERTS.LOGIN_SUCCESS, TOAST_TYPES.SUCCESS);
         methods.reset();
-        router.push("/que1");
+        router.push("/dashboard");
       }
     } catch (error) {
+      setIsLoading(false);
+
       toast.error(TOAST_ALERTS.ERROR_MESSAGE);
       console.log("Error", error);
     }
   };
 
   return (
-    <div className='container-div'>
-      <div className='logo-div-section'>
-        <div className=''>
-          <img src='/images/webLogo.png' className='' alt='Property' />
-        </div>
-      </div>
-      <div className='image-div '>
-        <CustomSlider />
-      </div>
-
-      <div className='form-div'>
-        <div className='center-div'>
-          <img
-            src='/images/webLogo.png'
-            className='logo-image'
-            alt='Property'
-          />
-        </div>
-
-        <div className='center-form-div'>
-          <div className='title-div'>
-            <p className='login-title'>Welcome Back</p>
-            <text className='login-desc'>Log in your account</text>
+    <>
+      <div className='container-div'>
+        <div className='logo-div-section'>
+          <div className=''>
+            <img src='/images/webLogo.png' className='' alt='Property' />
           </div>
-          <FormProvider
-            methods={methods}
-            onSubmit={handleSubmit(onSubmitForm)}
-            className='provider-div'>
-            <div className='column-div'>
-              <div className='inside-form'>
-                <RHFTextInput
-                  name='email'
-                  className='input-login-div input-div-text pl-10 ' // Add padding to the left to accommodate the image
-                  placeholder='Email Address'
-                />
-                <div className='input-left-icon'>
-                  <img src='/images/mail.png' alt='icon' className='w-5 h-5' />
+        </div>
+        <div className='image-div '>
+          <CustomSlider />
+        </div>
+
+        <div className='form-div'>
+          <div className='center-div'>
+            <img
+              src='/images/webLogo.png'
+              className='logo-image'
+              alt='Property'
+            />
+          </div>
+
+          <div className='center-form-div'>
+            <div className='title-div'>
+              <p className='login-title'>{t("Welcome Back")}</p>
+              <text className='login-desc'>{t("Log in your account")}</text>
+            </div>
+            <FormProvider
+              methods={methods}
+              onSubmit={handleSubmit(onSubmitForm)}
+              className='provider-div'>
+              <div className='column-div'>
+                <div className='inside-form'>
+                  <RHFTextInput
+                    name='email'
+                    className='input-login-div input-div-text pl-10 ' // Add padding to the left to accommodate the image
+                    placeholder='Email Address'
+                  />
+                  <div className='input-left-icon'>
+                    <img
+                      src='/images/mail.png'
+                      alt='icon'
+                      className='w-5 h-5'
+                    />
+                  </div>
+                </div>
+                <div className='inside-form'>
+                  <RHFTextInput
+                    name='password'
+                    type={isHidden ? "password" : "text"}
+                    className='input-login-div input-div-text pl-10 '
+                    placeholder='Password'
+                  />
+                  <div className='input-left-icon'>
+                    <img
+                      src='/images/lock.png'
+                      alt='icon'
+                      className='w-5 h-5'
+                    />
+                  </div>
+                  <button
+                    type='button'
+                    onClick={() => setIsHidden(!isHidden)}
+                    className='input-right-icon'>
+                    <img
+                      src={isHidden ? "/images/hidden.png" : "/images/eye.png"}
+                      alt='icon'
+                      className='w-5 h-5'
+                    />
+                  </button>
                 </div>
               </div>
-              <div className='inside-form'>
-                <RHFTextInput
-                  name='password'
-                  type={isHidden ? "password" : "text"}
-                  className='input-login-div input-div-text pl-10 '
-                  placeholder='Password'
-                />
-                <div className='input-left-icon'>
-                  <img src='/images/lock.png' alt='icon' className='w-5 h-5' />
-                </div>
-                <button
-                  type='button'
-                  onClick={() => setIsHidden(!isHidden)}
-                  className='input-right-icon'>
-                  <img
-                    src={isHidden ? "/images/hidden.png" : "/images/eye.png"}
-                    alt='icon'
-                    className='w-5 h-5'
-                  />
+
+              <div className='forgot-text'>
+                <Link
+                  href='/forgotPassword'
+                  onClick={() => dispatch(setIsForgotPassword(true))}>
+                  {t("Forgot Password ?")}
+                </Link>
+              </div>
+              <div className='center-div'>
+                <button type='submit' className='login-btn'>
+                  {t("Log in")}
                 </button>
               </div>
-            </div>
 
-            <div className='forgot-text'>
-              <Link
-                href='/forgotPassword'
-                onClick={() => dispatch(setIsForgotPassword(true))}>
-                Forgot Password ?
-              </Link>
-            </div>
-            <div className='center-div'>
-              <button type='submit' className='login-btn'>
-                Log in
-              </button>
-            </div>
-
-            {/* <div className='mt-[80px] lg:mt-[50px]  text-create-account-link'>
+              {/* <div className='mt-[80px] lg:mt-[50px]  text-create-account-link'>
               <span className='font-normal'>
                 Don’t have an account?&nbsp;
                 <Link className='font-medium' href='/register'>
@@ -238,18 +212,20 @@ const LoginPage = () => {
                 </Link>
               </span>
             </div> */}
-          </FormProvider>
-          <div className='bottom-div'>
-            <text className='register-text'>First time here?</text>
-            <button onClick={() => router.push("/register")}>
-              {/* <Link className='register-btn' href='/register'> */}
-              <div className='register-btn'>Register</div>
-              {/* </Link> */}
-            </button>
+            </FormProvider>
+            <div className='bottom-div'>
+              <text className='register-text'>{t("First time here?")}</text>
+              <button onClick={() => router.push("/register")}>
+                {/* <Link className='register-btn' href='/register'> */}
+                <div className='register-btn'>{t("Register")}</div>
+                {/* </Link> */}
+              </button>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+      {isLoading && <Loader />}
+    </>
   );
 };
 
